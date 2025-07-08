@@ -29,11 +29,11 @@ struct Data criaData(){
     do {
         printf("Dia: ");
         scanf("%d", &data.dia);
-    } while ((data.dia < 0) || (data.dia > 31));
+    } while ((data.dia < 1) || (data.dia > 31));
     do {
         printf("Mes: ");
         scanf("%d", &data.mes);
-    } while (data.mes < 0 || data.mes > 12);
+    } while (data.mes < 1 || data.mes > 12);
     do {
         printf("Ano: ");
         scanf("%d", &data.ano);
