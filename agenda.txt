@@ -1,0 +1,21 @@
+5
+12 04 2025
+21 00 22 00
+Jantar
+Casa da mae
+14 04 2025
+14 00 15 00
+Reuniao
+UDESC
+14 04 2025
+20 30 21 30
+Jantar
+Casa da tia
+16 04 2025
+19 00 21 00
+Prova
+UDESC
+20 04 2025
+11 00 11 30
+Pagar boleto
+Banco
