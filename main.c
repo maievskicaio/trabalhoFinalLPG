@@ -4,7 +4,7 @@
 
 #include "evento.h"
 
-void descarregaAgenda(FILE *arquivo, struct Evento *agenda);
+void carregaAgenda(FILE *arquivo, struct Evento *agenda);
 void mostraAgenda(struct Evento *agenda, int numEventos);
 void mostraEvento(struct Evento evento);
 void mostraAgendaPorData(struct Evento *agenda, int numEventos, struct Data data);
@@ -12,7 +12,7 @@ void mostraAgendaPorDescricao(struct Evento *agenda, int numEventos, char descri
 int validaEventoAgenda(struct Evento *agenda, int numEventos, struct Evento novoEvento);
 int indiceParaIserir(struct Evento *agenda, int numEventos, struct Evento novoEvento);
 void insereNaAgendaPorIndice(struct Evento *agenda, int numEventos, struct Evento novoEvento, int indice);
-void carregaAgenda(FILE *arquivo, struct Evento *agenda, int numEventos);
+void descarregaAgenda(FILE *arquivo, struct Evento *agenda, int numEventos);
 int confereData(struct Evento *agenda, int numEventos, struct Data eData);
 int confereHorario(struct Evento *agenda, int numEventos, struct Horario eHorario);
 void removeEvento(struct Evento *agenda, int numEventos, struct Data eData, struct Horario eHorario);
@@ -30,7 +30,7 @@ int main(){
     }
     
     struct Evento *agenda = malloc(sizeof(struct Evento) * numEventos);
-    descarregaAgenda(arquivo, agenda);
+    carregaAgenda(arquivo, agenda);
     fclose(arquivo);
 
     struct Data eData;
@@ -38,7 +38,7 @@ int main(){
     int escolha = 0;
     while(escolha != 6){
         arquivo = fopen("agenda.txt", "wt");
-        carregaAgenda(arquivo, agenda, numEventos);
+        descarregaAgenda(arquivo, agenda, numEventos);
         fclose(arquivo);
         
         puts("---------------------");
@@ -48,51 +48,56 @@ int main(){
         scanf("%d", &escolha);
         switch (escolha)
         {
-        case 1:
-            printf(""); // sem isso estava dando o erro: "a label can only be part of a statement and a declaration is not a statement"
-            struct Evento novoEvento = criaEvento();
-            if(validaEventoAgenda(agenda, numEventos, novoEvento) == 1) {
-                printf("* ERRO: O NOVO evento tem conflito com evento JA EXISTENTE.\n");
+            case 1: {
+
+                struct Evento novoEvento = criaEvento();
+                if(validaEventoAgenda(agenda, numEventos, novoEvento) == 1) {
+                    printf("* ERRO: O NOVO evento tem conflito com evento JA EXISTENTE.\n");
+                    break;
+                }
+                int indice = indiceParaIserir(agenda, numEventos, novoEvento);
+                numEventos++;
+                agenda = realloc(agenda, sizeof(struct Evento) * numEventos);
+                insereNaAgendaPorIndice(agenda, numEventos, novoEvento, indice);
+                printf("* NOVO EVENTO ADICIONADO.\n");
                 break;
             }
-            int indice = indiceParaIserir(agenda, numEventos, novoEvento);
-            numEventos++;
-            agenda = realloc(agenda, sizeof(struct Evento) * numEventos);
-            insereNaAgendaPorIndice(agenda, numEventos, novoEvento, indice);
-            printf("* NOVO EVENTO ADICIONADO.\n");
-            break;
-        case 2:
-            mostraAgenda(agenda, numEventos);
-            break;
-        case 3:
-            printf("Insira a data para buscar: \n");
-            eData = criaData();
-            mostraAgendaPorData(agenda, numEventos, eData);
-            break;
-        case 4:
-            printf("Insira a descricao para buscar: \n");
-            char eDescricao[100];
-            scanf(" %[^\n]", eDescricao);
-            mostraAgendaPorDescricao(agenda, numEventos, eDescricao);
-            break;
-        case 5:
-            printf("Informacoes do Evento que quer remover:\n");
-            printf("Data:\n");
-            eData = criaData();
-            if(confereData(agenda, numEventos, eData) == 1){
-                printf("* ERRO: Data nao encontrada.\n");
+            case 2: {
+                mostraAgenda(agenda, numEventos);
                 break;
             }
-            printf("Horario Inicial:\n");
-            eHorario = criaHorario();
-            if(confereHorario(agenda, numEventos, eHorario) == 1){
-                printf("* ERRO: Horario nao encontrado.\n");
+            case 3: {
+                printf("Insira a data para buscar: \n");
+                eData = criaData();
+                mostraAgendaPorData(agenda, numEventos, eData);
                 break;
             }
-            removeEvento(agenda, numEventos, eData, eHorario);
-            numEventos--;
-            agenda = realloc(agenda, sizeof(struct Evento) * numEventos);
-            break;
+            case 4:{
+                printf("Insira a descricao para buscar: \n");
+                char eDescricao[100];
+                scanf(" %[^\n]", eDescricao);
+                mostraAgendaPorDescricao(agenda, numEventos, eDescricao);
+                break;
+            }
+            case 5: {
+                printf("Informacoes do Evento que quer remover:\n");
+                printf("Data:\n");
+                eData = criaData();
+                if(confereData(agenda, numEventos, eData) == 1){
+                    printf("* ERRO: Data nao encontrada.\n");
+                    break;
+                }
+                printf("Horario Inicial:\n");
+                eHorario = criaHorario();
+                if(confereHorario(agenda, numEventos, eHorario) == 1){
+                    printf("* ERRO: Horario nao encontrado.\n");
+                    break;
+                }
+                removeEvento(agenda, numEventos, eData, eHorario);
+                numEventos--;
+                agenda = realloc(agenda, sizeof(struct Evento) * numEventos);
+                break;
+            }
         }
     }
 
@@ -104,9 +109,10 @@ void removeEvento(struct Evento *agenda, int numEventos, struct Data eData, stru
     int indice;
     for(int i = 0; i < numEventos; i++){
         if(comparaData(agenda[i].data, eData) == 0) {
-            if(comparaHorario(agenda[i].horarioInicio, eHorario) == 0);
-            indice = i;
-            break;
+            if(comparaHorario(agenda[i].horarioInicio, eHorario) == 0){
+                indice = i;
+                break;
+            }
         }
     }
     for(int i = 0; i < (numEventos-1); i++){
@@ -134,7 +140,7 @@ int confereData(struct Evento *agenda, int numEventos, struct Data eData) {
     return 1;
 }
 
-void carregaAgenda(FILE *arquivo, struct Evento *agenda, int numEventos){
+void descarregaAgenda(FILE *arquivo, struct Evento *agenda, int numEventos){
     fprintf(arquivo, "%d\n", numEventos);
     for(int i = 0; i < numEventos; i++){
         fprintf(arquivo, "%d %d %d\n", agenda[i].data.dia, agenda[i].data.mes, agenda[i].data.ano);
@@ -228,7 +234,7 @@ void mostraAgenda(struct Evento *agenda, int numEventos){
     }
 }
 
-void descarregaAgenda(FILE *arquivo, struct Evento *agenda){
+void carregaAgenda(FILE *arquivo, struct Evento *agenda){
     int numEventos = 0;
     fscanf(arquivo, "%d", &numEventos);
 
